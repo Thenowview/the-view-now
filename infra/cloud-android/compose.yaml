@@ -1,0 +1,20 @@
+# Dedicated ARM64 VPS only. ADB binds to loopback; never expose in OCI firewall.
+# This is a compatibility candidate, not a production-certified configuration.
+services:
+  android:
+    image: redroid/redroid:14.0.0_64only-latest
+    privileged: true
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:5555:5555'
+    volumes:
+      - './data:/data'
+    command:
+      - androidboot.redroid_width=720
+      - androidboot.redroid_height=1280
+      - androidboot.redroid_dpi=240
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
