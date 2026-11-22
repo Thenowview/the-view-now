@@ -36,3 +36,15 @@ test('Cloudflare build attempts Git HEAD fallback for immutable deployed revisio
  assert.match(build,/revision=validRevision/);
  assert.match(build,/\/\^\[a-f0-9\]\{40\}\$/);
 });
+
+test('host probe is read-only and rejects absent Binder before deployment',()=>{
+ const probe=read('infra/cloud-android/probe-host.sh');
+ assert.match(probe,/x86_64/);
+ assert.match(probe,/aarch64/);
+ assert.match(probe,/Binder: NOT detected/);
+ assert.match(probe,/BLOCKED: Binder not available/);
+ assert.doesNotMatch(probe,/sudo\s+(?:apt|dnf|yum|modprobe|insmod|reboot)|docker\s+run|iptables\s+(-A|-I)|curl\s.*\|\s*bash/);
+ if(process.platform!=='win32'){
+  assert.equal(execFileSync('bash',['-n',new URL('../infra/cloud-android/probe-host.sh',import.meta.url).pathname],{encoding:'utf8'}),'');
+ }
+});
