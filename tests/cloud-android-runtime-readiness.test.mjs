@@ -16,6 +16,10 @@ test('Android container requires immutable reviewed digest and localhost-only AD
 test('preflight blocks when digest, Docker or Binder prerequisites are missing',()=>{
  const script=read('infra/cloud-android/preflight.sh');
  assert.match(script,/REDROID_IMAGE=redroid\/redroid@sha256/);
+ assert.match(script,/x86_64\|amd64/);
+ assert.match(script,/aarch64\|arm64/);
+ assert.match(script,/expected_image_arch/);
+ assert.match(script,/\$arch.*\$expected_image_arch/);
  assert.match(script,/Docker daemon inaccessible/);
  assert.match(script,/Binder support not detected/);
  assert.match(script,/PREFLIGHT PASS/);
@@ -31,4 +35,16 @@ test('Cloudflare build attempts Git HEAD fallback for immutable deployed revisio
  assert.match(build,/execFileSync\('git',\['rev-parse','HEAD'\]/);
  assert.match(build,/revision=validRevision/);
  assert.match(build,/\/\^\[a-f0-9\]\{40\}\$/);
+});
+
+test('host probe is read-only and rejects absent Binder before deployment',()=>{
+ const probe=read('infra/cloud-android/probe-host.sh');
+ assert.match(probe,/x86_64/);
+ assert.match(probe,/aarch64/);
+ assert.match(probe,/Binder: NOT detected/);
+ assert.match(probe,/BLOCKED: Binder not available/);
+ assert.doesNotMatch(probe,/sudo\s+(?:apt|dnf|yum|modprobe|insmod|reboot)|docker\s+run|iptables\s+(-A|-I)|curl\s.*\|\s*bash/);
+ if(process.platform!=='win32'){
+  assert.equal(execFileSync('bash',['-n',new URL('../infra/cloud-android/probe-host.sh',import.meta.url).pathname],{encoding:'utf8'}),'');
+ }
 });
