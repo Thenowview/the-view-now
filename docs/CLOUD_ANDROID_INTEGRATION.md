@@ -1,6 +1,6 @@
 # NewView Cloud Android — free-tier-first, opt-in integration
 
-**Status: code integration only. No Oracle VPS, Android instance, or browser viewer has been deployed.** The endpoint fails closed until an operator configures authentication and a working private viewer. Google Play certification or subscription pricing is not guaranteed.
+**Status: NewView Cloud Android UI and fail-closed API were deployed to the existing Cloudflare Worker; no Oracle VPS, Android instance, or browser viewer has been verified or deployed.** The endpoint fails closed until an operator configures authentication and a working private viewer. Google Play certification or subscription pricing is not guaranteed.
 
 ## Architecture and safety
 
@@ -14,8 +14,8 @@
 
 1. Confirm an eligible Oracle Always Free Ampere A1 instance is available and within current account quotas. Verify network, storage and billing before creation; do not assume every region has capacity.
 2. On a dedicated Ubuntu ARM64 VM, install and configure Docker following reviewed vendor instructions, using SSH keys, firewall rules and regular security updates.
-3. Run `cd infra/cloud-android && bash preflight.sh`. This is read-only and blocks when prerequisites are absent. Oracle's available kernels might lack Android Binder features.
-4. Independently review the container image and PIN ITS APPROVED DIGEST before production. Then `docker compose up -d` and examine `docker compose ps` and `docker compose logs --tail=100 android`.
+3. On the dedicated ARM64 host, first review `redroid/redroid:14.0.0_64only-latest`, pull it, and verify the returned image digest and actual image architecture (`arm64`). Do not trust a mutable `-latest` tag for deployment. Record an approved immutable `redroid/redroid@sha256:<64 hex characters>` reference in `infra/cloud-android/.env` (start from `.env.example`, which deliberately contains an invalid placeholder). Do not commit `.env`.
+4. Run `cd infra/cloud-android && bash preflight.sh`. It fails closed if `.env`, the locally pulled immutable image digest, ARM64 architecture, Binder support, Docker, RAM or storage prerequisites are unavailable. On success, run `docker compose config --images`, then `docker compose up -d`, `docker compose ps`, and `docker compose logs --tail=100 android`. A passing preflight does **not** verify Android boots.
 5. Android data persists under `infra/cloud-android/data/` and must not enter Git. Back it up securely and keep the host isolated; the container runs privileged.
 6. ADB is bound to host loopback `127.0.0.1:5555`. Connect only through authenticated SSH forwarding or an approved private VPN. Never open TCP/5555 on the internet.
 7. The Compose stack **does not include a browser viewer**. Choose and validate an independently secured browser-compatible viewer before configuring NewView. Remote display and mouse/keyboard controls need separate acceptance testing.
@@ -46,3 +46,28 @@ Run `npm run verify` and `node --test tests/cloud-android.test.mjs` for source, 
 - Google billing and regional SKU claims: out of scope; do not use this project to bypass eligibility rules.
 
 No production deploy, secret changes, payment or app signing is authorized by this document.
+
+## Free Windows desktop control (private SSH only)
+
+After Android successfully boots on the dedicated VM, use Windows PowerShell with **ADB** and [scrcpy](https://github.com/Genymobile/scrcpy) installed. These commands require two terminals.
+
+Terminal 1 (keeps a private SSH tunnel open, replace with your authorized VM account, IP and key):
+
+```powershell
+ssh -i "$env:USERPROFILE\.ssh\id_ed25519" -N -L 15555:127.0.0.1:5555 ubuntu@YOUR_ORACLE_VM_IP
+```
+
+Terminal 2 (while Terminal 1 is running):
+
+```powershell
+adb connect 127.0.0.1:15555
+adb -s 127.0.0.1:15555 shell getprop sys.boot_completed
+scrcpy -s 127.0.0.1:15555
+adb disconnect 127.0.0.1:15555
+```
+
+The Android device should report `sys.boot_completed=1` before display testing. These commands do **not** provide browser/TV streaming; that requires a separately evaluated, independently authenticated gateway. Stop the tunnel when not using it. Never expose TCP 5555 publicly or configure a permanent publicly accessible ADB service.
+
+## Release verification and traceability
+
+The Worker build discovers its commit SHA from Cloudflare/GitHub environment variables or the checked-out Git HEAD, and makes it available at `/version` when known. Compare this with the merged GitHub commit and Cloudflare deployment after every release. If build metadata and Git history are missing, the revision remains `null`; do not invent a source revision. The code-only integration is safe to deploy before a VM exists because the Android session endpoint rejects unconfigured or unauthenticated requests.
