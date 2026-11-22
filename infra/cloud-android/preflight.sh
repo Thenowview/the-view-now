@@ -11,7 +11,17 @@ elif ! grep -Eq '^REDROID_IMAGE=redroid/redroid@sha256:[[:xdigit:]]{64}if [[ "$(
 case "$(uname -m)" in aarch64|arm64)echo 'PASS: ARM64 Linux';;*)echo 'ERROR: ARM64 host required';fail=1;;esac
 if ! command -v docker >/dev/null 2>&1;then echo 'ERROR: Docker unavailable';fail=1
 elif ! docker info >/dev/null 2>&1;then echo 'ERROR: Docker daemon inaccessible';fail=1
-else echo 'PASS: Docker available';fi
+else
+ echo 'PASS: Docker available'
+ image_ref="$(sed -n 's/^REDROID_IMAGE=//p' "$script_dir/.env" 2>/dev/null | tail -n 1)"
+ if [[ "$image_ref" =~ ^redroid/redroid@sha256:[a-fA-F0-9]{64}$ ]];then
+  if ! arch="$(docker image inspect "$image_ref" --format '{{.Architecture}}' 2>/dev/null)";then
+   echo 'ERROR: approved digest is not pulled locally; inspect and pull it before preflight';fail=1
+  elif [[ "$arch" != arm64 ]];then
+   echo "ERROR: image architecture is $arch, not arm64";fail=1
+  else echo 'PASS: approved local image is ARM64';fi
+ fi
+fi
 if [[ -e /dev/binder || -e /dev/binderfs/binder || -e /dev/binder-control || -e /dev/binderfs/binder-control ]] ||
  (test -r /proc/filesystems && grep -qw binder /proc/filesystems) ||
  (test -r /proc/modules && grep -q '^binder_linux ' /proc/modules);then
