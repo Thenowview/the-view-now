@@ -25,5 +25,8 @@ test('only Cloudflare Builds publishes automatically; main gets independent read
  assert.doesNotMatch(verifier,/wrangler deploy|CLOUDFLARE_API_TOKEN|write-all|contents: write/);
  assert.match(deployment,/workflow_dispatch/);
  assert.doesNotMatch(deployment,/^\s+push:/m);
- assert.match(build,/WORKERS_CI_COMMIT_SHA\|\|process\.env\.GITHUB_SHA/);
+ // Revision must be traceable even in Cloudflare Builds, where GITHUB_SHA is absent.
+ assert.match(build,/validRevision\(process\.env\.WORKERS_CI_COMMIT_SHA\)/);
+ assert.match(build,/validRevision\(process\.env\.GITHUB_SHA\)/);
+ assert.match(build,/execFileSync\('git',\['rev-parse','HEAD'\]/);
 });

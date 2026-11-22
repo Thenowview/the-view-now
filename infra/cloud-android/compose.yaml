@@ -2,7 +2,7 @@
 # This is a compatibility candidate, not a production-certified configuration.
 services:
   android:
-    image: redroid/redroid:14.0.0_64only-latest
+    image: "${REDROID_IMAGE:?Pin a reviewed redroid/redroid@sha256 digest in .env before starting}"
     privileged: true
     restart: unless-stopped
     ports:
