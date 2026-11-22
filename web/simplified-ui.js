@@ -297,6 +297,7 @@
   }
   addAction(watchActions,'YouTube','Watch videos within NewView',()=>window.NewViewYouTube?.open?.());
   addAction(watchActions,'Mirror device','Phone and TV screen sharing',()=>{window.NewViewShell?.select?.('devices');window.NewViewCast?.open?.();});
+  addAction(watchActions,'Cloud Android','Open your private Android device',()=>window.NewViewCloudAndroid?.open?.());
   // Read focuses on text. Market charts and business sites are optional links,
   // never video controls or duplicate headline navigation.
   addAction(readActions,'Markets','Binance charts',()=>window.NewViewShell?.select?.('markets'));
