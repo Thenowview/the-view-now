@@ -1,4 +1,5 @@
-# Dedicated ARM64 VPS only. ADB binds to loopback; never expose in OCI firewall.
+# Dedicated AMD64 or ARM64 Linux VPS with Binder; ADB binds to loopback ONLY.
+# Validate host support before start. ReDroid does not require nested KVM.
 # This is a compatibility candidate, not a production-certified configuration.
 services:
   android:
