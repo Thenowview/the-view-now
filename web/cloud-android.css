@@ -1,0 +1,11 @@
+.nv-cloud-android{margin:1rem 0;padding:1rem;border:1px solid var(--line,#344458);border-radius:12px;background:var(--panel,#142030);color:inherit;max-width:100%;min-width:0}
+.nv-cloud-android[hidden]{display:none!important}
+.nv-cloud-android h3{margin:0 0 .65rem;font-size:1.1rem}
+.nv-cloud-android p{max-width:70ch;overflow-wrap:anywhere}
+.nv-cloud-android-status{min-height:1.5em}
+.nv-cloud-android-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.65rem}
+.nv-cloud-android-actions button,.nv-cloud-android-actions a{font:inherit;display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:.6rem .9rem;border:1px solid currentColor;border-radius:8px;color:inherit;background:transparent;text-decoration:none;cursor:pointer}
+.nv-cloud-android-actions a[hidden]{display:none!important}
+.nv-cloud-android-actions button:focus-visible,.nv-cloud-android-actions a:focus-visible{outline:3px solid #69dbe0;outline-offset:3px}
+.nv-cloud-android-actions button:disabled{opacity:.65;cursor:wait}
+@media(max-width:480px){.nv-cloud-android-actions{flex-direction:column;align-items:stretch}}
