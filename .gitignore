@@ -36,3 +36,7 @@ release-out/
 *commercial.private.json
 *support-request*.private.json
 *notices.preview.json
+
+# Persistent Android device state (sensitive, never commit)
+infra/cloud-android/data/
+infra/cloud-android/.env
